@@ -37,17 +37,21 @@ SPECS = nosys.specs
 CC = /usr/bin/arm-none-eabi-gcc
 LD = /usr/bin/arm-none-eabi-as
 TARGET = main
-LDFLAGS = -Wl -Map=$(TARGET).map -T $(LINKER_FILE)
+LDFLAGS = -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
 CFLAGS = -mcpu=$(CPU) -march=$(MARCH) -m$(ARCH)  --specs=$(SPECS) -Wall -Werror -g -O0 -std=c99
-#CPPFLAGs =  
+CPPFLAGs = -D$(PLATFORM)
 
 OBJS = $(SOURCES:.c=.o)
 
-.PHONY: compile-all
-compile-all: $(SOURCES)
-$(CC) -c $(CFLAGS) $^ -o $@
+%.i : %.c
+	$(CC) -E -I$(INCLUDES) -I$(INCLUDES_MSP432) -I$(INCLUDES_CMSIS) $(CPPFLAGs) $^ -o $@
 
-#.PHONY: build
-#build: $(OBJS)
-#$$(CC) $(LDFLAGS) $(OBJS) 
+%.o : %.i
+	$(CC) -c $(CFLAGS) $(CPPFLAGs) $^ -o $@
 
+#.PHONY: compile-all
+#compile: $(OBJS)
+	
+
+#%.o : %.c
+#	$(CC) -c $(CFLAGS) $< -o $@
