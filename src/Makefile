@@ -99,6 +99,12 @@ system_msp432p401r.i : system_msp432p401r.c
 system_msp432p401r.o : system_msp432p401r.i
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
+%.asm : %.o
+	$(OBJDUMP) -S $< > $@
+
+$(TARGET).asm : $(TARGET).out
+	$(OBJDUMP) -S $< > $@
+
 $(TARGET).out : $(OBJS)
 	$(CC)  $(CFLAGS) $(LDFLAGS) -o $(TARGET).out $(OBJS)
 	$(SIZE)  -B $(TARGET).out 
