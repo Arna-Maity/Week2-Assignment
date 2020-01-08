@@ -26,7 +26,7 @@ include sources.mk
 # Platform Overrides
 PLATFORM = MSP432
 
-TARGET = main
+TARGET = c1m2
 
 # General compiler flags for both platforms
 CFLAGS = -Wall -Werror -g -O0 -std=c99
@@ -41,30 +41,60 @@ CPPFLAGs := -D$(PLATFORM)
 		ARCH := thumb
 		MARCH := armv7e-m 
 		SPECS := nosys.specs
-		FPU := 
+		FPU := -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 		CC := /usr/bin/arm-none-eabi-gcc
 		LD := /usr/bin/arm-none-eabi-ld
 		LDFLAGS := -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
-		CFLAGS := $(CFLAGS) -mcpu=$(CPU) -march=$(MARCH) -m$(ARCH)  --specs=$(SPECS)
+		CFLAGS := $(CFLAGS) -mcpu=$(CPU) -march=$(MARCH) -m$(ARCH)  --specs=$(SPECS) $(FPU)
 		SOURCES:= $(SOURCES) interrupts_msp432p401r_gcc.c startup_msp432p401r_gcc.c system_msp432p401r.c
 
 	else
 		CC := /usr/bin/gcc
-		LD := /usr/bin/as
+		LD := /usr/bin/ld
 		# etc
 	endif
 
 OBJS = $(SOURCES:.c=.o)
 
-%.i : %.c
+#%.i : %.c
+#	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
+
+#%.o : %.i
+#	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
+
+main.i : main.c
 	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
 
-%.o : %.i
+main.o : main.i
+	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
+
+memory.i : memory.c
+	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
+
+memory.o : memory.i
+	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
+
+startup_msp432p401r_gcc.i : startup_msp432p401r_gcc.c
+	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
+
+startup_msp432p401r_gcc.o : startup_msp432p401r_gcc.i
+	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
+
+interrupts_msp432p401r_gcc.i : interrupts_msp432p401r_gcc.c
+	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
+
+interrupts_msp432p401r_gcc.o : interrupts_msp432p401r_gcc.i
+	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
+
+system_msp432p401r.i : system_msp432p401r.c
+	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
+
+system_msp432p401r.o : system_msp432p401r.i
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
 $(TARGET).out : $(OBJS)
-	$(CC)  $(LDFLAGS) -o $(TARGET).out $(OBJS) 
+	$(CC)  $(CFLAGS) $(LDFLAGS) -o $(TARGET).out $(OBJS) 
 
 .PHONY: compile-all
 compile-all: $(OBJS)
