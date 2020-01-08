@@ -45,13 +45,19 @@ CPPFLAGs := -D$(PLATFORM)
 
 		CC := /usr/bin/arm-none-eabi-gcc
 		LD := /usr/bin/arm-none-eabi-ld
+		SIZE := /usr/bin/arm-none-eabi-size
+		OBJDUMP:= /usr/bin/arm-none-eabi-objdump
 		LDFLAGS := -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
 		CFLAGS := $(CFLAGS) -mcpu=$(CPU) -march=$(MARCH) -m$(ARCH)  --specs=$(SPECS) $(FPU)
 		SOURCES:= $(SOURCES) interrupts_msp432p401r_gcc.c startup_msp432p401r_gcc.c system_msp432p401r.c
+		INCLUDES := $(INCLUDES) -I../include/msp432/ -I../include/CMSIS/
 
 	else
 		CC := /usr/bin/gcc
 		LD := /usr/bin/ld
+		SIZE := /usr/bin/size
+		OBJDUMP := /usr/bin/objdump
+		LDFLAGS :=
 		# etc
 	endif
 
@@ -94,7 +100,8 @@ system_msp432p401r.o : system_msp432p401r.i
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
 $(TARGET).out : $(OBJS)
-	$(CC)  $(CFLAGS) $(LDFLAGS) -o $(TARGET).out $(OBJS) 
+	$(CC)  $(CFLAGS) $(LDFLAGS) -o $(TARGET).out $(OBJS)
+	$(SIZE)  -B $(TARGET).out 
 
 .PHONY: compile-all
 compile-all: $(OBJS)
