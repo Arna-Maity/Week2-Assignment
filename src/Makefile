@@ -60,7 +60,6 @@ CPPFLAGs := -D$(PLATFORM)
 		SIZE := /usr/bin/size
 		OBJDUMP := /usr/bin/objdump
 		LDFLAGS :=
-		# etc
 	endif
 
 OBJS = $(SOURCES:.c=.o)
