@@ -30,8 +30,10 @@ TARGET = c1m2
 
 # General compiler flags for both platforms
 CFLAGS = -Wall -Werror -g -O0 -std=c99
+DEPFLAGS := -M
 
 CPPFLAGs := -D$(PLATFORM)
+
 
 # Compiler Flags and Defines
 	ifeq ($(PLATFORM),MSP432)
@@ -69,34 +71,34 @@ OBJS = $(SOURCES:.c=.o)
 #%.o : %.i
 #	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
-main.i : main.c
+main.i : main.c main.d
 	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
 
-main.o : main.i
+main.o : main.i main.d
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
-memory.i : memory.c
+memory.i : memory.c memory.d
 	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
 
-memory.o : memory.i
+memory.o : memory.i memory.d
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
-startup_msp432p401r_gcc.i : startup_msp432p401r_gcc.c
+startup_msp432p401r_gcc.i : startup_msp432p401r_gcc.c startup_msp432p401r_gcc.d
 	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
 
-startup_msp432p401r_gcc.o : startup_msp432p401r_gcc.i
+startup_msp432p401r_gcc.o : startup_msp432p401r_gcc.i startup_msp432p401r_gcc.d
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
-interrupts_msp432p401r_gcc.i : interrupts_msp432p401r_gcc.c
+interrupts_msp432p401r_gcc.i : interrupts_msp432p401r_gcc.c interrupts_msp432p401r_gcc.d
 	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
 
-interrupts_msp432p401r_gcc.o : interrupts_msp432p401r_gcc.i
+interrupts_msp432p401r_gcc.o : interrupts_msp432p401r_gcc.i interrupts_msp432p401r_gcc.d
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
-system_msp432p401r.i : system_msp432p401r.c
+system_msp432p401r.i : system_msp432p401r.c system_msp432p401r.d
 	$(CC) -E $(INCLUDES) $(CPPFLAGs) $< -o $@
 
-system_msp432p401r.o : system_msp432p401r.i
+system_msp432p401r.o : system_msp432p401r.i system_msp432p401r.d
 	$(CC) -c $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< -o $@
 
 %.asm : %.o
@@ -104,6 +106,9 @@ system_msp432p401r.o : system_msp432p401r.i
 
 $(TARGET).asm : $(TARGET).out
 	$(OBJDUMP) -S $< > $@
+
+%.d : %.c
+	$(CC) $(DEPFLAGS) $(INCLUDES) $(CFLAGS) $(CPPFLAGs) $< > $@
 
 $(TARGET).out : $(OBJS)
 	$(CC)  $(CFLAGS) $(LDFLAGS) -o $(TARGET).out $(OBJS)
@@ -117,4 +122,4 @@ build: $(TARGET).out
 	
 .PHONY: clean
 clean:
-	rm -rf *.i *.o *.asm *.map *.out
+	rm -rf *.i *.o *.asm *.map *.out *.d
