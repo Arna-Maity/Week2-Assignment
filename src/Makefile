@@ -28,9 +28,10 @@ PLATFORM = MSP432
 
 TARGET = c1m2
 
-# General compiler flags for both platforms
+# General compiler and linker flags for both platforms
 CFLAGS = -Wall -Werror -g -O0 -std=c99
 DEPFLAGS := -M
+LDFLAGS := -Wl,-Map=$(TARGET).map
 
 CPPFLAGs := -D$(PLATFORM)
 
@@ -49,7 +50,7 @@ CPPFLAGs := -D$(PLATFORM)
 		LD := /usr/bin/arm-none-eabi-ld
 		SIZE := /usr/bin/arm-none-eabi-size
 		OBJDUMP:= /usr/bin/arm-none-eabi-objdump
-		LDFLAGS := -Wl,-Map=$(TARGET).map -T $(LINKER_FILE)
+		LDFLAGS := $(LDFLAGS) -T $(LINKER_FILE)
 		CFLAGS := $(CFLAGS) -mcpu=$(CPU) -march=$(MARCH) -m$(ARCH)  --specs=$(SPECS) $(FPU)
 		SOURCES:= $(SOURCES) interrupts_msp432p401r_gcc.c startup_msp432p401r_gcc.c system_msp432p401r.c
 		INCLUDES := $(INCLUDES) -I../include/msp432/ -I../include/CMSIS/
@@ -59,7 +60,6 @@ CPPFLAGs := -D$(PLATFORM)
 		LD := /usr/bin/ld
 		SIZE := /usr/bin/size
 		OBJDUMP := /usr/bin/objdump
-		LDFLAGS :=
 	endif
 
 OBJS = $(SOURCES:.c=.o)
@@ -111,7 +111,7 @@ $(TARGET).asm : $(TARGET).out
 
 $(TARGET).out : $(OBJS)
 	$(CC)  $(CFLAGS) $(LDFLAGS) -o $(TARGET).out $(OBJS)
-	$(SIZE)  -B $(TARGET).out 
+	$(SIZE) $(TARGET).out 
 
 .PHONY: compile-all
 compile-all: $(OBJS)
